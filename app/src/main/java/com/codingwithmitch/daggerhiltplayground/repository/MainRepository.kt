@@ -22,11 +22,15 @@ constructor(
         emit(DataState.Loading)
         delay(1000)
         try{
+            //The network call
             val networkBlogs = blogRetrofit.get()
             val blogs = networkMapper.mapFromEntityList(networkBlogs)
+
+            //Insert the blogs to the db
             for(blog in blogs){
                 blogDao.insert(cacheMapper.mapToEntity(blog))
             }
+            //Get the stored blogs from the db
             val cachedBlogs = blogDao.get()
             emit(DataState.Success(cacheMapper.mapFromEntityList(cachedBlogs)))
         }catch (e: Exception){
