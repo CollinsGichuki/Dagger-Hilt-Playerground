@@ -1,36 +1,38 @@
 package com.codingwithmitch.daggerhiltplayground.ui
 
-import androidx.hilt.Assisted
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import com.codingwithmitch.daggerhiltplayground.model.Blog
-import com.codingwithmitch.daggerhiltplayground.util.DataState
 import com.codingwithmitch.daggerhiltplayground.repository.MainRepository
-import com.codingwithmitch.daggerhiltplayground.ui.MainStateEvent.*
+import com.codingwithmitch.daggerhiltplayground.ui.MainStateEvent.GetBlogsEvent
+import com.codingwithmitch.daggerhiltplayground.ui.MainStateEvent.None
+import com.codingwithmitch.daggerhiltplayground.util.DataState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
+@HiltViewModel
 class MainViewModel
-@ViewModelInject
+@Inject
 constructor(
     private val mainRepository: MainRepository,
-    @Assisted private val savedStateHandle: SavedStateHandle
-): ViewModel() {
+    private val savedStateHandle: SavedStateHandle
+) : ViewModel() {
 
     private val _dataState: MutableLiveData<DataState<List<Blog>>> = MutableLiveData()
 
     val dataState: LiveData<DataState<List<Blog>>>
         get() = _dataState
 
-    fun setStateEvent(mainStateEvent: MainStateEvent){
+    fun setStateEvent(mainStateEvent: MainStateEvent) {
         viewModelScope.launch {
-            when(mainStateEvent){
+            when (mainStateEvent) {
                 is GetBlogsEvent -> {
                     mainRepository.getBlogs()
-                        .onEach {dataState ->
+                        .onEach { dataState ->
                             _dataState.value = dataState
                         }
                         .launchIn(viewModelScope)
@@ -46,11 +48,11 @@ constructor(
 }
 
 
-sealed class MainStateEvent{
+sealed class MainStateEvent {
 
-    object GetBlogsEvent: MainStateEvent()
+    object GetBlogsEvent : MainStateEvent()
 
-    object None: MainStateEvent()
+    object None : MainStateEvent()
 }
 
 
